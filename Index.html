@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Numizz">
+<title>Numizz</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--ink:#1a1a2e;--paper:#f7f5f0;--paper2:#eeeae0;--accent:#c8502a;--accent2:#e8734a;--green:#2a7a4a;--muted:#888880;--border:#d8d4c8;--white:#fff;--shadow:0 2px 12px rgba(26,26,46,.10);--r:14px;--rs:8px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+.topbar{background:var(--ink);color:#fff;padding:52px 20px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-title{font-size:20px;font-weight:700}
+.topbar-sub{font-size:12px;color:#aaa;margin-top:2px}
+.topbar-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--rs);padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--ink);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;cursor:pointer;color:#888;border:none;background:none;font-size:10px;gap:3px}
+.nav-item.active{color:var(--accent2)}
+.nav-item svg{width:22px;height:22px}
+.screen{display:none;padding:16px 16px 100px}
+.screen.active{display:block}
+.card{background:#fff;border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.bg{background:#e0f5ea;color:var(--green)}
+.bo{background:#fdeee8;color:var(--accent)}
+.bb{background:#e8eeff;color:#3355bb}
+.bp{background:#f0e8ff;color:#7733bb}
+.btn{border:none;border-radius:var(--rs);padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-p{background:var(--accent);color:#fff}
+.btn-s{background:var(--paper2);color:var(--ink)}
+.btn-g{background:var(--green);color:#fff}
+.btn-f{width:100%;margin-top:8px}
+.bico{background:var(--paper2);border:none;border-radius:var(--rs);padding:8px;cursor:pointer}
+.fg{margin-bottom:14px}
+.fl{font-size:13px;font-weight:600;color:#2d2d44;margin-bottom:6px;display:block}
+.fi{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:15px;background:#fff;color:var(--ink);outline:none;-webkit-appearance:none}
+.fi:focus{border-color:var(--accent)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fs{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:15px;background:#fff;color:var(--ink);outline:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.st{font-size:18px;font-weight:800}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.sg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+.sc{background:#fff;border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
+.sv{font-size:20px;font-weight:800}
+.sl{font-size:11px;color:var(--muted);margin-top:2px}
+.sa{color:var(--accent)}
+.sg2{color:var(--green)}
+.sbl{color:#3355bb}
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end}
+.mo.open{display:flex}
+.md{background:#fff;border-radius:20px 20px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom));width:100%;max-height:90vh;overflow-y:auto}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.mt{font-size:18px;font-weight:800}
+.mc{background:var(--paper2);border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer}
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:30px;font-size:14px;font-weight:600;z-index:300;opacity:0;transition:opacity .3s;white-space:nowrap}
+.toast.show{opacity:1}
+.li{background:#fff;border-radius:var(--r);padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px}
+.lic{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;overflow:hidden}
+.lim{flex:1;min-width:0}
+.lit{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lis{font-size:13px;color:var(--muted);margin-top:2px}
+.lir{text-align:right;flex-shrink:0}
+.sb{position:relative;margin-bottom:14px}
+.si{width:100%;padding:12px 14px 12px 40px;border:1.5px solid var(--border);border-radius:var(--rs);font-size:15px;background:#fff;outline:none}
+.sic{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.stb{height:6px;border-radius:3px;background:var(--border);margin-top:8px;overflow:hidden}
+.stf{height:100%;border-radius:3px;background:var(--green)}
+.stf.low{background:var(--accent)}
+.cr{background:#fff;border-radius:var(--rs);padding:14px 16px;margin-bottom:2px;display:flex;justify-content:space-between;align-items:center;font-size:15px;cursor:pointer}
+.cs{margin-bottom:20px}
+.cst{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.tabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+.tab{padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;border:none;cursor:pointer;white-space:nowrap;background:var(--paper2);color:var(--muted)}
+.tab.active{background:var(--ink);color:#fff}
+.ib{background:var(--paper2);border-radius:var(--rs);padding:12px 14px;margin-bottom:14px;font-size:13px;color:#2d2d44}
+.ib b{color:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div><div class="topbar-title" id="tt">📚 Numizz</div><div class="topbar-sub" id="ts">Panel principal</div></div>
+  <button class="topbar-btn" id="ta" onclick="topbarAction()" style="display:none">+ Nuevo</button>
+</div>
+
+<!-- DASHBOARD -->
+<div id="screen-dashboard" class="screen active">
+  <div class="sg">
+    <div class="sc"><div class="sv sa" id="s-lib">–</div><div class="sl">Librerías</div></div>
+    <div class="sc"><div class="sv" id="s-lib2">–</div><div class="sl">Títulos</div></div>
+  </div>
+  <div class="sg3">
+    <div class="sc"><div class="sv sbl" id="s-kdp">–</div><div class="sl">Comprado KDP</div></div>
+    <div class="sc"><div class="sv" id="s-alm">–</div><div class="sl">En almacén</div></div>
+    <div class="sc"><div class="sv sg2" id="s-gan">–</div><div class="sl">Ganancia neta</div></div>
+  </div>
+  <div class="sh"><div class="st">Stock por título</div></div>
+  <div id="d-stock"><div class="empty">Cargando...</div></div>
+  <div class="sh" style="margin-top:16px"><div class="st">Accesos rápidos</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+    <button class="card" style="text-align:left;border:none;cursor:pointer" onclick="showScreen('stock')"><div style="font-size:28px;margin-bottom:6px">📦</div><div style="font-weight:700;font-size:14px">Stock</div><div style="font-size:12px;color:var(--muted)">Compras y depósitos</div></button>
+    <button class="card" style="text-align:left;border:none;cursor:pointer" onclick="showScreen('ventas')"><div style="font-size:28px;margin-bottom:6px">💰</div><div style="font-weight:700;font-size:14px">Ventas</div><div style="font-size:12px;color:var(--muted)">Registrar</div></button>
+    <button class="card" style="text-align:left;border:none;cursor:pointer" onclick="showScreen('libros')"><div style="font-size:28px;margin-bottom:6px">📖</div><div style="font-weight:700;font-size:14px">Libros</div><div style="font-size:12px;color:var(--muted)">Catálogo</div></button>
+    <button class="card" style="text-align:left;border:none;cursor:pointer" onclick="showScreen('librerias')"><div style="font-size:28px;margin-bottom:6px">🏪</div><div style="font-weight:700;font-size:14px">Librerías</div><div style="font-size:12px;color:var(--muted)">Gestionar</div></button>
+  </div>
+</div>
+
+<!-- LIBROS -->
+<div id="screen-libros" class="screen">
+  <div class="sb"><svg class="sic" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="si" placeholder="Buscar título, autor, ISBN..." oninput="renderLibros(this.value)"></div>
+  <div id="libros-list"><div class="empty">Cargando...</div></div>
+</div>
+
+<!-- LIBRERÍAS -->
+<div id="screen-librerias" class="screen">
+  <div id="librerias-list"></div>
+</div>
+
+<!-- STOCK -->
+<div id="screen-stock" class="screen">
+  <div class="tabs">
+    <button class="tab active" onclick="showStockTab('compras',this)">🛒 Compras KDP</button>
+    <button class="tab" onclick="showStockTab('depositos',this)">📦 Depósitos</button>
+    <button class="tab" onclick="showStockTab('librerias',this)">🏪 Por librería</button>
+  </div>
+  <div id="st-compras"></div>
+  <div id="st-depositos" style="display:none"></div>
+  <div id="st-librerias" style="display:none"></div>
+</div>
+
+<!-- VENTAS -->
+<div id="screen-ventas" class="screen">
+  <div class="sg">
+    <div class="sc"><div class="sv sa" id="v-mes">–</div><div class="sl">Ventas brutas mes</div></div>
+    <div class="sc"><div class="sv sg2" id="v-gan">–</div><div class="sl">Ganancia neta mes</div></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="filterVentas('todos',this)">Todas</button>
+    <button class="tab" onclick="filterVentas('libreria',this)">🏪 Librerías</button>
+    <button class="tab" onclick="filterVentas('amazon',this)">📦 Amazon</button>
+  </div>
+  <div id="ventas-list"></div>
+</div>
+
+<!-- MARCA -->
+<div id="screen-marca" class="screen">
+  <div class="tabs">
+    <button class="tab active" onclick="showMarcaTab('contactos',this)">🌟 Contactos</button>
+    <button class="tab" onclick="showMarcaTab('envios',this)">📬 Envíos</button>
+    <button class="tab" onclick="showMarcaTab('gastos',this)">💸 Gastos</button>
+  </div>
+  <div id="m-contactos"></div>
+  <div id="m-envios" style="display:none"></div>
+  <div id="m-gastos" style="display:none"></div>
+</div>
+
+<!-- MÁS -->
+<div id="screen-mas" class="screen">
+  <div class="cs"><div class="cst">Informes PDF</div>
+    <div class="cr" onclick="pdfCatalogoCliente()">📚 Catálogo cliente</div>
+    <div class="cr" onclick="pdfCatalogoLibrerias()">🏪 Catálogo librerías</div>
+    <div class="cr" onclick="pdfStock()">📦 Informe de stock</div>
+    <div class="cr" onclick="pdfVentas()">💰 Informe de ventas</div>
+    <div class="cr" onclick="pdfGanancias()">📈 Informe de ganancias</div>
+    <div class="cr" onclick="pdfMarca()">🌟 Informe de marca</div>
+  </div>
+  <div class="cs"><div class="cst">Liquidaciones</div>
+    <div class="cr" onclick="openModal('mo-liquidacion')">➕ Nueva liquidación</div>
+    <div id="liq-list"></div>
+  </div>
+  <div class="cs"><div class="cst">Datos</div>
+    <div class="cr" onclick="exportBackup()">💾 Exportar backup</div>
+    <div class="cr" onclick="document.getElementById('imp-file').click()">📥 Importar backup</div>
+    <input type="file" id="imp-file" accept=".json" style="display:none" onchange="importBackup(this)">
+  </div>
+  <div class="cs"><div class="cst">Aplicación</div>
+    <div class="cr">Versión 4.0.0</div>
+    <div class="cr" onclick="openModal('mo-config')">⚙️ Configuración Supabase</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showScreen('dashboard')" id="nav-dashboard">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span>Inicio</span></button>
+  <button class="nav-item" onclick="showScreen('libros')" id="nav-libros">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+    <span>Libros</span></button>
+  <button class="nav-item" onclick="showScreen('librerias')" id="nav-librerias">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Librerías</span></button>
+  <button class="nav-item" onclick="showScreen('stock')" id="nav-stock">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+    <span>Stock</span></button>
+  <button class="nav-item" onclick="showScreen('ventas')" id="nav-ventas">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+    <span>Ventas</span></button>
+  <button class="nav-item" onclick="showScreen('mas')" id="nav-mas">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    <span>Más</span></button>
+</nav>
+
+<!-- MODALES -->
+<div class="mo" id="mo-libro"><div class="md">
+  <div class="mh"><div class="mt" id="mo-libro-t">Nuevo libro</div><button class="mc" onclick="closeModal('mo-libro')">✕</button></div>
+  <input type="hidden" id="l-id">
+  <div class="fg"><label class="fl">Título *</label><input class="fi" id="l-titulo" placeholder="Título del libro"></div>
+  <div class="fg"><label class="fl">Autor</label><input class="fi" id="l-autor" placeholder="Nombre del autor"></div>
+  <div class="fr">
+    <div class="fg"><label class="fl">ISBN</label><input class="fi" id="l-isbn" placeholder="ISBN"></div>
+    <div class="fg"><label class="fl">Editorial</label><input class="fi" id="l-editorial" placeholder="Editorial"></div>
+  </div>
+  <div class="ib">💡 Todos los precios con IVA incluido. El coste es solo interno.</div>
+  <div class="fr">
+    <div class="fg"><label class="fl">Coste producción (€)</label><input class="fi" id="l-coste" type="number" step="0.01" placeholder="0.00" oninput="calcNetos()"></div>
+    <div class="fg"><label class="fl">PVP (€)</label><input class="fi" id="l-pvp" type="number" step="0.01" placeholder="0.00" oninput="calcNetos()"></div>
+  </div>
+  <div class="fr">
+    <div class="fg"><label class="fl">Neto autor librerías (70%)</label><input class="fi" id="l-nlib" type="number" step="0.01" placeholder="0.00"></div>
+    <div class="fg"><label class="fl">Regalía Amazon (40%)</label><input class="fi" id="l-namz" type="number" step="0.01" placeholder="0.00"></div>
+  </div>
+  <div id="l-calc" class="ib" style="display:none"></div>
+  <div class="fr">
+    <div class="fg"><label class="fl">Portada</label>
+      <div id="port-prev" style="width:100%;height:120px;background:var(--paper2);border-radius:var(--rs);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer" onclick="document.getElementById('l-port-inp').click()">
+        <span id="port-ph" style="color:var(--muted);font-size:13px">📷 Portada</span>
+        <img id="port-img" style="display:none;width:100%;height:100%;object-fit:cover">
+      </div>
+      <button type="button" onclick="clearImg('port')" style="width:100%;margin-top:4px;padding:4px;background:var(--paper2);border:none;border-radius:var(--rs);font-size:12px;cursor:pointer;color:var(--accent)">🗑️ Quitar foto</button>
+      <input type="file" id="l-port-inp" accept="image/*" style="display:none" onchange="prevImg(this,'port')">
+      <input type="hidden" id="l-portada">
+    </div>
+    <div class="fg"><label class="fl">Contraportada</label>
+      <div id="cont-prev" style="width:100%;height:120px;background:var(--paper2);border-radius:var(--rs);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer" onclick="document.getElementById('l-cont-inp').click()">
+        <span id="cont-ph" style="color:var(--muted);font-size:13px">📷 Contra</span>
+        <img id="cont-img" style="display:none;width:100%;height:100%;object-fit:cover">
+      </div>
+      <button type="button" onclick="clearImg('cont')" style="width:100%;margin-top:4px;padding:4px;background:var(--paper2);border:none;border-radius:var(--rs);font-size:12px;cursor:pointer;color:var(--accent)">🗑️ Quitar foto</button>
+      <input type="file" id="l-cont-inp" accept="image/*" style="display:none" onchange="prevImg(this,'cont')">
+      <input type="hidden" id="l-contrap">
+    </div>
+  </div>
+  <button class="btn btn-p btn-f" onclick="saveLibro()">Guardar libro</button>
+  <button class="btn btn-s btn-f" onclick="closeModal('mo-libro')">Cancelar</button>
+</div></div>
+
+<div class="mo" id="mo-libreria"><div class="md">
+  <div class="mh"><div class="mt" id="mo-lib-t">Nueva librería</div><button class="mc" onclick="closeModal('mo-libreria')">✕</button></div>
+  <input type="hidden" id="lib-id">
+  <div class="fg"><label class="fl">Nombre *</label><input class="fi" id="lib-nombre" placeholder="Nombre"></div>
+  <div class="fg"><label class="fl">Ciudad</label><input class="fi" id="lib-ciudad" placeholder="Ciudad"></div>
+  <div class="fg"><label class="fl">Dirección</label><input class="fi" id="lib-dir" placeholder="Dirección"></div>
+  <div class="fg"><label class="fl">Contacto</label><input class="fi" id="lib-contacto" placeholder="Persona de contacto"></div>
+  <div class="fr">
+    <div class="fg"><label class="fl">Email</label><input class="fi" id="lib-email" type="email" placeholder="email@..."></div>
+    <div class="fg"><label class="fl">Teléfono</label><input class="fi" id="lib-tel" type="tel" placeholder="000 000 000"></div>
+  </div>
+  <button class="btn btn-p btn-f" onclick="saveLibreria()">Guardar librería</button>
+  <button class="btn btn-s btn-f" onclick="closeModal('mo-libreria')">Cancelar</button>
+</div></div>
+
+<div class="mo" id="mo-compra"><div class="md">
+  <div class="mh"><div class="mt">Nueva compra KDP</div><button class="mc" onclick="closeModal('mo-compra')">✕</button></div>
+  <div class="ib">📦 Registra los ejemplares comprados a la imprenta KDP</div>
+  <div class="fg"><label class="fl">Libro *</label><select class="fs" id="c-libro"><option value="">Seleccionar...</option></select></div>
+  <div class="fr">
+    <div class="fg"><label class="fl">Cantidad *</label><input class="fi" id="c-cant" type="number" min="1" placeholder="0"></div>
+    <div class="fg"><label class="fl">Coste unitario (€)</label><input class="fi" id="c-coste" type="number" step="0.01" placeholder="0.00"></div>
+  </div>
+  <div class="fg"><label class="fl">Fecha pedido</label><input class="fi" id="c-fecha" type="date"></div>
+  <div class="fg"><label class="fl">Notas</label><input class="fi" id="c-notas" placeholder="Referencia pedido..."></div>
+  <button class="btn btn-p btn-f" onclick="saveCompra()">Registrar compra</button>
+  <button class="btn btn-s btn-f" onclick="closeModal('mo-compra')">Cancelar</button>
+</div></div>
+
+<div class="mo" id="mo-deposito"><div class="md">
+  <div class="mh"><div class="mt" id="mo-dep-t">Nuevo depósito</div><button class="mc" onclick="closeModal('mo-deposito')">✕</button></div>
+  <input type="hidden" id="d-id">
+  <div class="fg"><label class="fl">Librería *</label><select class="fs" id="d-lib"><option value="">Seleccionar...</option></select></div>
+  <div class="fg"><label class="fl">Libro *</label><select class="fs" id="d-libro"><option value="">Seleccionar...</option></select></div>
+  <div class="fg"><label class="fl">Cantidad *</label><input class="fi" id="d-cant" type="number" min="1" placeholder="0"></div>
+  <div class="fg"><label class="fl">Fecha envío</label><input class="fi" id="d-fecha" type="date"></div>
+  <div class="fg"><label class="fl">Nº Albarán</label>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-weight:600;color:var(--accent);font-size:15px">DEP-</span>
+      <input class="fi" id="d-albaran" type="number" min="1" max="999" placeholder="001" style="width:100px;text-align:center">
+    </div>
+  </div>
+  <button class="btn btn-p btn-f" onclick="saveDeposito()">Registrar depósito</button>
+  <button class="btn btn-s btn-f" onclick="closeModal('mo-deposito')">Cancelar</button>
+</div></div>
+
+<div class="mo" id="mo-venta"><div class="md">
+  <div class="mh"><div class="mt">Registrar venta</div><button class="mc" onclick="closeModal('mo-venta')">✕</button></div>
+  <div class="fg"><label class="fl">Canal *</label>
+    <select class="fs" id="v-canal" onchange="onCanalChange()">
+      <option value="libreria">🏪 Librería</option>
+      <option value="amazon">📦 Amazon KDP</option>
+    </select>
+  </div>
+  <div id="v-lib-grp" class="fg"><label class="fl">Librería *</label>
+    <select class="fs" id="v-libreria" onchange="loadLibrosVenta()"><option value="">Seleccionar...</option></select>
+  </div>
+  <div class="fg"><label class="fl">Libro *</label>
+    <select class="fs" id="v-libro"><option value="">Seleccionar...</option></select>
+  </div>
+  <div class="fr">
+    <div class="fg"><label class="fl">Cantidad *</label><input class="fi" id="v-cant" type="number" min="1" value="1"></div>
+    <div class="fg"><label class="fl">PVP (€)</label><input class="fi" id="v-pvp" type="number" step="0.01" placeholder="0.00"></div>
+  </div>
+  <div id="v-info" class="ib" style="display:none"></div>
+  <div class="fg"><label class="fl">Fecha</label><input class="fi" id="v-fecha" type="date"></div>
+  <button class="btn btn-g btn-f" onclick="saveVenta()">Registrar venta</button>
+  <button class="btn btn-s btn-f" onclick="closeModal('mo-venta')">Cancelar</button>
+</div></div>
+
+<div class="mo" id="mo-contacto"><div class="md">
+  <div class="mh"><div class="mt" id="mo-cont-t">Nuevo contacto</div><button class="mc" onclick="closeModal('mo-contacto')">✕</button></div>
+  <input type="hidden" id="co-id">
+  <div class="fg"><label class="fl">Nombre *</label><input class="fi" id="co-nombre" placeholder="Nombre"></div>
+  <div class="fg"><label class="fl">Tipo</label>
+    <select class="fs" id="co-tipo">
+      <option value="influencer">Influencer</option>
+      <option value="asociacion">Asociación</option>
+      <option value="organizacion">Organización</option>
+      <option value="centro">Centro privado</option>
+      <option value="otro">Otro</option>
+    </select>
+  </div>
+  <div class="fg"><label class="fl">Ciudad</label><input class="fi" id="co-ciudad" placeholder="Ciudad"></div>
+  <div class="fg"><label class="fl">Contacto</label><input class="fi" id="co-persona" placeholder="Persona de contacto"></div>
+  <div class="fr">
+    <div class="fg"><label class="fl">Email</label><input class="fi" id="co-email" type="email" placeholder="email@..."></div>
+    <div class="fg"><label class="fl">Teléfono</label><input class="fi" id="co-tel" type="tel" placeholder="000 000 000"></div>
+  </div>
+  <div class="fg"><label class="fl">Notas</label><input class="fi" id="co-notas" placeholder="Observaciones..."></div>
+  <button class="btn btn-p btn-f" onclick="saveContacto()">Guardar contacto</button>
+  <button class="btn btn-s btn-f" onclick="closeModal('mo-contacto')">Cancelar</button>
+</div></div>
+
+<div class="mo" id="mo-envio"><div class="md">
+  <div class="mh"><div class="mt">Envío de marca</div><button class="mc" onclick="closeModal('mo-envio')">✕</button></div>
+  <div class="ib">📬 Se contabiliza como gasto y se descuenta del stock</div>
+  <div class="fg"><label class="fl">Contacto *</label><select class="fs" id="e-contacto"><option value="">Seleccionar...</option></select></div>
+  <div class="fg"><label class="fl">Libro *</label><select class="fs" id="e-libro"><option value="">Seleccionar...</option></select></div>
+  <div class="fr">
+    <div class="fg"><label class="fl">Cantidad *</label><input class="fi" id="e-cant" type="number" min="1" value="1"></div>
+    <div class="fg"><label class="fl">Coste unitario (€)</label><input class="fi" id="e-coste" type="number" step="0.01" placeholder="0.00"></div>
+  </div>
+  <div class="fg"><label class="fl">Fecha</label><input class="fi" id="e-fecha" type="date"></div>
+  <div class="fg"><label class="fl">Notas</label><input class="fi" id="e-notas" placeholder="Observaciones..."></div>
+  <button class="btn btn-p btn-f" onclick="saveEnvio()">Registrar envío</button>
+  <button class="btn btn-s btn-f" onclick="closeModal('mo-envio')">Cancelar</button>
+</div></div>
+
+<div class="mo" id="mo-gasto"><div class="md">
+  <div class="mh"><div class="mt">Nuevo gasto</div><button class="mc" onclick="closeModal('mo-gasto')">✕</button></div>
+  <div class="fg"><label class="fl">Concepto *</label><input class="fi" id="g-concepto" placeholder="Descripción del gasto"></div>
+  <div class="fg"><label class="fl">Categoría</label>
+    <select class="fs" id="g-cat">
+      <option value="envio">Envío postal</option>
+      <option value="material">Material</option>
+      <option value="publicidad">Publicidad</option>
+      <option value="logistica">Logística</option>
+      <option value="evento">Evento</option>
+      <option value="otro">Otro</option>
+    </select>
+  </div>
+  <div class="fr">
+    <div class="fg"><label class="fl">Importe (€) *</label><input class="fi" id="g-importe" type="number" step="0.01" placeholder="0.00"></div>
+    <div class="fg"><label class="fl">Proveedor</label><input class="fi" id="g-prov" placeholder="Empresa..."></div>
+  </div>
+  <div class="fg"><label class="fl">Fecha</label><input class="fi" id="g-fecha" type="date"></div>
+  <div class="fg"><label class="fl">Notas</label><input class="fi" id="g-notas" placeholder="Observaciones..."></div>
+  <button class="btn btn-p btn-f" onclick="saveGasto()">Guardar gasto</button>
+  <button class="btn btn-s btn-f" onclick="closeModal('mo-gasto')">Cancelar</button>
+</div></div>
+
+<div class="mo" id="mo-liquidacion"><div class="md">
+  <div class="mh"><div class="mt">Nueva liquidación</div><button class="mc" onclick="closeModal('mo-liquidacion')">✕</button></div>
+  <div class="fg"><label class="fl">Librería *</label><select class="fs" id="lq-lib"><option value="">Seleccionar...</option></select></div>
+  <div class="fr">
+    <div class="fg"><label class="fl">Total ventas (€)</label><input class="fi" id="lq-ventas" type="number" step="0.01" placeholder="0.00"></div>
+    <div class="fg"><label class="fl">Total coste (€)</label><input class="fi" id="lq-coste" type="number" step="0.01" placeholder="0.00"></div>
+  </div>
+  <div class="fg"><label class="fl">Fecha</label><input class="fi" id="lq-fecha" type="date"></div>
+  <div class="fg"><label class="fl">Notas</label><input class="fi" id="lq-notas" placeholder="Observaciones..."></div>
+  <button class="btn btn-p btn-f" onclick="saveLiquidacion()">Guardar</button>
+  <button class="btn btn-s btn-f" onclick="closeModal('mo-liquidacion')">Cancelar</button>
+</div></div>
+
+<div class="mo" id="mo-config"><div class="md">
+  <div class="mh"><div class="mt">Configuración Supabase</div><button class="mc" onclick="closeModal('mo-config')">✕</button></div>
+  <div class="fg"><label class="fl">URL del proyecto</label><input class="fi" id="cfg-url" placeholder="https://xxx.supabase.co"></div>
+  <div class="fg"><label class="fl">Clave pública (anon key)</label><input class="fi" id="cfg-key" placeholder="eyJ..."></div>
+  <button class="btn btn-p btn-f" onclick="saveConfig()">Guardar y conectar</button>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var SB_URL = localStorage.getItem('sb_url') || 'https://qoqqsotezgzjnhrkbhcr.supabase.co';
+var SB_KEY = localStorage.getItem('sb_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFvcXFzb3Rlemd6am5ocmtiaGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMTMwMDksImV4cCI6MjA5NjY4OTAwOX0.QbRQZ2C7j7UVVowVjmPwwB6lrb8zqDhIQ_QUxMTbuNk';
+if (!localStorage.getItem('sb_url')) { localStorage.setItem('sb_url', SB_URL); localStorage.setItem('sb_key', SB_KEY); }
+
+var DB = { librerias:[], libros:[], depositos:[], ventas:[], liquidaciones:[], contactos:[], envios:[], gastos:[], compras:[] };
+var ventaFiltro = 'todos';
+var marcaTab = 'contactos';
+var stockTab = 'compras';
+
+function eur(n) { return new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(n||0); }
+function fecha(f) { if(!f) return ''; return new Date(f+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}); }
+function toast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2500); }
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function almacen(libroId) {
+  var comp = DB.compras.filter(function(c){return c.libro_id===libroId;}).reduce(function(a,c){return a+c.cantidad;},0);
+  var dep = DB.depositos.filter(function(d){return d.libro_id===libroId;}).reduce(function(a,d){return a+d.cantidad_enviada;},0);
+  var marc = DB.envios.filter(function(e){return e.libro_id===libroId;}).reduce(function(a,e){return a+e.cantidad;},0);
+  return comp - dep - marc;
+}
+function stockLib(libroId, libId) {
+  var env = DB.depositos.filter(function(d){return d.libro_id===libroId&&d.libreria_id===libId;}).reduce(function(a,d){return a+d.cantidad_enviada;},0);
+  var vend = DB.ventas.filter(function(v){return v.libro_id===libroId&&v.libreria_id===libId&&v.canal==='libreria';}).reduce(function(a,v){return a+v.cantidad;},0);
+  return env - vend;
+}
+
+async function api(table, params, method, body) {
+  params = params || '';
+  method = method || 'GET';
+  var url = SB_URL + '/rest/v1/' + table + '?select=*' + params;
+  if (method !== 'GET') url = SB_URL + '/rest/v1/' + table + (params ? '?' + params.substring(1) : '');
+  var opts = {
+    method: method,
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  var r = await fetch(url, opts);
+  if (!r.ok) throw new Error(await r.text());
+  if (r.status === 204) return [];
+  return r.json();
+}
+async function ins(table, data) { return api(table, '', 'POST', data); }
+async function upd(table, id, data) {
+  var url = SB_URL + '/rest/v1/' + table + '?id=eq.' + id;
+  var r = await fetch(url, {
+    method: 'PATCH',
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function del(table, id) {
+  var url = SB_URL + '/rest/v1/' + table + '?id=eq.' + id;
+  var r = await fetch(url, {
+    method: 'DELETE',
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+  });
+  if (!r.ok) throw new Error(await r.text());
+}
+
+async function loadAll() {
+  try {
+    var results = await Promise.all([
+      api('librerias','&order=nombre.asc'),
+      api('libros','&order=titulo.asc'),
+      api('depositos','&order=created_at.desc'),
+      api('ventas','&order=fecha.desc'),
+      api('liquidaciones','&order=fecha.desc'),
+      api('contactos_marca','&order=nombre.asc'),
+      api('envios_marca','&order=fecha.desc'),
+      api('gastos_expansion','&order=fecha.desc'),
+      api('compras_kdp','&order=fecha_pedido.desc')
+    ]);
+    DB.librerias = results[0]||[];
+    DB.libros = results[1]||[];
+    DB.depositos = results[2]||[];
+    DB.ventas = results[3]||[];
+    DB.liquidaciones = results[4]||[];
+    DB.contactos = results[5]||[];
+    DB.envios = results[6]||[];
+    DB.gastos = results[7]||[];
+    DB.compras = results[8]||[];
+    renderAll();
+  } catch(e) { toast('Error de conexión'); console.error(e); }
+}
+
+var currentScreen = 'dashboard';
+var screenCfg = {
+  dashboard:{title:'📚 Numizz',sub:'Panel principal',action:null},
+  libros:{title:'📖 Libros',sub:'Catálogo',action:'Nuevo'},
+  librerias:{title:'🏪 Librerías',sub:'',action:'Nueva'},
+  stock:{title:'📦 Stock',sub:'Compras y depósitos',action:'Nuevo'},
+  ventas:{title:'💰 Ventas',sub:'',action:'Registrar'},
+  marca:{title:'🌟 Marca',sub:'Contactos y gastos',action:'Nuevo'},
+  mas:{title:'⚙️ Opciones',sub:'',action:null}
+};
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  document.getElementById('screen-'+name).classList.add('active');
+  var nav = document.getElementById('nav-'+name);
+  if (nav) nav.classList.add('active');
+  currentScreen = name;
+  var cfg = screenCfg[name];
+  document.getElementById('tt').textContent = cfg.title;
+  document.getElementById('ts').textContent = cfg.sub;
+  var btn = document.getElementById('ta');
+  if (cfg.action) { btn.style.display='block'; btn.textContent='+ '+cfg.action; } else btn.style.display='none';
+  renderScreen(name);
+}
+
+function topbarAction() {
+  if (currentScreen==='libros') { resetLibroForm(); openModal('mo-libro'); }
+  else if (currentScreen==='librerias') { resetLibreriaForm(); openModal('mo-libreria'); }
+  else if (currentScreen==='ventas') { resetVentaForm(); openModal('mo-venta'); }
+  else if (currentScreen==='stock') {
+    if (stockTab==='compras') { resetCompraForm(); openModal('mo-compra'); }
+    else if (stockTab==='depositos') { resetDepositoForm(); openModal('mo-deposito'); }
+    else { resetLibreriaForm(); openModal('mo-libreria'); }
+  }
+  else if (currentScreen==='marca') {
+    if (marcaTab==='contactos') { resetContactoForm(); openModal('mo-contacto'); }
+    else if (marcaTab==='envios') { resetEnvioForm(); openModal('mo-envio'); }
+    else { resetGastoForm(); openModal('mo-gasto'); }
+  }
+}
+
+function showStockTab(tab, el) {
+  stockTab = tab;
+  document.querySelectorAll('#screen-stock .tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  ['compras','depositos','librerias'].forEach(function(t){
+    document.getElementById('st-'+t).style.display = t===tab ? 'block' : 'none';
+  });
+  var labels = {compras:'Compra',depositos:'Depósito',librerias:'Librería'};
+  document.getElementById('ta').textContent = '+ ' + labels[tab];
+  if (tab==='compras') renderCompras();
+  else if (tab==='depositos') renderDepositos();
+  else renderStockLibrerias();
+}
+
+function showMarcaTab(tab, el) {
+  marcaTab = tab;
+  document.querySelectorAll('#screen-marca .tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  ['contactos','envios','gastos'].forEach(function(t){
+    document.getElementById('m-'+t).style.display = t===tab ? 'block' : 'none';
+  });
+  var labels = {contactos:'Contacto',envios:'Envío',gastos:'Gasto'};
+  document.getElementById('ta').textContent = '+ ' + labels[tab];
+  if (tab==='contactos') renderContactos();
+  else if (tab==='envios') renderEnvios();
+  else renderGastos();
+}
+
+function filterVentas(canal, el) {
+  ventaFiltro = canal;
+  document.querySelectorAll('#screen-ventas .tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  renderVentas();
+}
+
+function renderAll() { renderDashboard(); renderLibros(); renderLibrerias(); renderCompras(); renderDepositos(); renderStockLibrerias(); renderVentas(); renderContactos(); renderEnvios(); renderGastos(); renderLiquidaciones(); }
+function renderScreen(name) {
+  if (name==='dashboard') renderDashboard();
+  else if (name==='libros') renderLibros();
+  else if (name==='librerias') renderLibrerias();
+  else if (name==='stock') { if(stockTab==='compras')renderCompras(); else if(stockTab==='depositos')renderDepositos(); else renderStockLibrerias(); }
+  else if (name==='ventas') renderVentas();
+  else if (name==='marca') { if(marcaTab==='contactos')renderContactos(); else if(marcaTab==='envios')renderEnvios(); else renderGastos(); }
+  else if (name==='mas') renderLiquidaciones();
+}
+
+function renderDashboard() {
+  document.getElementById('s-lib').textContent = DB.librerias.length;
+  document.getElementById('s-lib2').textContent = DB.libros.length;
+  var totalComp = DB.compras.reduce(function(a,c){return a+c.cantidad;},0);
+  document.getElementById('s-kdp').textContent = totalComp + ' ud.';
+  var totalAlm = DB.libros.reduce(function(a,l){return a+Math.max(0,almacen(l.id));},0);
+  document.getElementById('s-alm').textContent = totalAlm + ' ud.';
+  var gan = DB.ventas.reduce(function(a,v){
+    var l = DB.libros.find(function(x){return x.id===v.libro_id;});
+    if (!l) return a;
+    var n = v.canal==='amazon' ? (l.neto_amazon||0) : (l.neto_librerias||0);
+    return a + v.cantidad * (n - (l.precio_coste||0));
+  },0);
+  document.getElementById('s-gan').textContent = eur(gan);
+  var el = document.getElementById('d-stock');
+  if (!DB.libros.length) { el.innerHTML = '<div class="empty"><div style="font-size:48px">📦</div><p>Añade libros y compras para ver el stock</p></div>'; return; }
+  el.innerHTML = DB.libros.map(function(l) {
+    var comp = DB.compras.filter(function(c){return c.libro_id===l.id;}).reduce(function(a,c){return a+c.cantidad;},0);
+    var alm = Math.max(0, almacen(l.id));
+    var enLib = DB.librerias.reduce(function(a,lib){return a+Math.max(0,stockLib(l.id,lib.id));},0);
+    var vend = DB.ventas.filter(function(v){return v.libro_id===l.id&&v.canal==='libreria';}).reduce(function(a,v){return a+v.cantidad;},0);
+    var pct = comp > 0 ? (alm/comp)*100 : 0;
+    return '<div class="card">' +
+      '<div style="display:flex;gap:10px;align-items:center">' +
+      '<div style="width:40px;height:54px;border-radius:6px;overflow:hidden;flex-shrink:0;background:var(--paper2);display:flex;align-items:center;justify-content:center">' +
+      (l.portada ? '<img src="'+l.portada+'" style="width:100%;height:100%;object-fit:cover">' : '📖') +
+      '</div><div style="flex:1"><div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+l.titulo+'</div>' +
+      '<div style="font-size:12px;color:var(--muted)">'+(l.autor||'')+'</div></div></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-top:10px;text-align:center">' +
+      '<div><div style="font-size:16px;font-weight:800;color:#3355bb">'+comp+'</div><div style="font-size:10px;color:var(--muted)">Comprado</div></div>' +
+      '<div><div style="font-size:16px;font-weight:800;color:var(--green)">'+alm+'</div><div style="font-size:10px;color:var(--muted)">Almacén</div></div>' +
+      '<div><div style="font-size:16px;font-weight:800;color:var(--accent)">'+enLib+'</div><div style="font-size:10px;color:var(--muted)">Librerías</div></div>' +
+      '<div><div style="font-size:16px;font-weight:800">'+vend+'</div><div style="font-size:10px;color:var(--muted)">Vendido</div></div>' +
+      '</div><div class="stb"><div class="stf'+(pct<20?' low':'')+'" style="width:'+pct+'%"></div></div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-top:4px;text-align:right">Valor almacén: '+eur(alm*(l.precio_coste||0))+'</div></div>';
+  }).join('');
+}
+
+function renderLibros(filtro) {
+  filtro = filtro || '';
+  var el = document.getElementById('libros-list');
+  var data = DB.libros.filter(function(l) {
+    if (!filtro) return true;
+    return l.titulo.toLowerCase().includes(filtro.toLowerCase()) || (l.autor||'').toLowerCase().includes(filtro.toLowerCase()) || (l.isbn||'').includes(filtro);
+  });
+  if (!data.length) { el.innerHTML = '<div class="empty"><div style="font-size:48px">📖</div><p>No hay libros en el catálogo.</p></div>'; return; }
+  el.innerHTML = data.map(function(l) {
+    var gL = (l.neto_librerias||0)-(l.precio_coste||0);
+    var gA = (l.neto_amazon||0)-(l.precio_coste||0);
+    return '<div class="card"><div style="display:flex;gap:12px">' +
+      '<div style="width:52px;height:70px;border-radius:6px;overflow:hidden;flex-shrink:0;background:var(--paper2);display:flex;align-items:center;justify-content:center">' +
+      (l.portada ? '<img src="'+l.portada+'" style="width:100%;height:100%;object-fit:cover">' : '📖') +
+      '</div><div style="flex:1;min-width:0">' +
+      '<div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+l.titulo+'</div>' +
+      '<div style="font-size:13px;color:var(--muted)">'+(l.autor||'Sin autor')+(l.editorial?' · '+l.editorial:'')+'</div>' +
+      '<div style="margin-top:4px;font-size:12px;color:var(--muted)">PVP: '+eur(l.precio_venta)+' · Coste: '+eur(l.precio_coste)+'</div>' +
+      '<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">' +
+      '<span class="badge bb">🏪 '+eur(l.neto_librerias)+' <b style="color:var(--green)">+'+eur(gL)+'</b></span>' +
+      '<span class="badge bo">📦 '+eur(l.neto_amazon)+' <b style="color:var(--green)">+'+eur(gA)+'</b></span>' +
+      '</div></div>' +
+      '<div style="display:flex;flex-direction:column;gap:6px">' +
+      '<button class="bico" onclick="editLibro(\''+l.id+'\')">✏️</button>' +
+      '<button class="bico" onclick="delLibro(\''+l.id+'\')">🗑️</button>' +
+      '</div></div></div>';
+  }).join('');
+}
+
+function renderLibrerias() {
+  var el = document.getElementById('librerias-list'); if(!el) return;
+  if (!DB.librerias.length) { el.innerHTML = '<div class="empty"><div style="font-size:48px">🏪</div><p>No hay librerías. Añade la primera.</p></div>'; return; }
+  el.innerHTML = DB.librerias.map(function(l) {
+    var nDep = DB.depositos.filter(function(d){return d.libreria_id===l.id;}).length;
+    var nVen = DB.ventas.filter(function(v){return v.libreria_id===l.id;}).length;
+    return '<div class="li"><div class="lic" style="background:#e8eeff">🏪</div>' +
+      '<div class="lim"><div class="lit">'+l.nombre+'</div>' +
+      '<div class="lis">'+(l.ciudad||'')+(l.ciudad&&l.contacto?' · ':''+(l.contacto||''))+'</div>' +
+      '<div style="margin-top:4px;display:flex;gap:6px"><span class="badge bb">'+nDep+' depósitos</span><span class="badge bg">'+nVen+' ventas</span></div></div>' +
+      '<div style="display:flex;flex-direction:column;gap:6px">' +
+      '<button class="bico" onclick="editLibreria(\''+l.id+'\')">✏️</button>' +
+      '<button class="bico" onclick="delLibreria(\''+l.id+'\')">🗑️</button></div></div>';
+  }).join('');
+}
+
+function renderCompras() {
+  var el = document.getElementById('st-compras');
+  var total = DB.compras.reduce(function(a,c){return a+c.coste_total;},0);
+  var header = DB.compras.length ? '<div class="ib">Total invertido en KDP: <b>'+eur(total)+'</b></div>' : '';
+  if (!DB.compras.length) { el.innerHTML = '<div class="empty"><div style="font-size:48px">🛒</div><p>No hay compras registradas.</p></div>'; return; }
+  el.innerHTML = header + DB.compras.map(function(c) {
+    var libro = DB.libros.find(function(l){return l.id===c.libro_id;});
+    return '<div class="li">' +
+      '<div class="lic" style="background:#e8eeff">🛒</div>' +
+      '<div class="lim"><div class="lit">'+(libro?libro.titulo:'Libro')+'</div>' +
+      '<div class="lis">KDP · '+fecha(c.fecha_pedido)+'</div>' +
+      '<span class="badge bb">'+c.cantidad+' ud. · '+eur(c.coste_unitario)+'/ud.</span></div>' +
+      '<div class="lir"><div style="font-weight:700">'+eur(c.coste_total)+'</div>' +
+      '<button class="bico" style="margin-top:6px" onclick="delCompra(\''+c.id+'\')">🗑️</button></div></div>';
+  }).join('');
+}
+
+function renderDepositos() {
+  var el = document.getElementById('st-depositos');
+  if (!DB.depositos.length) { el.innerHTML = '<div class="empty"><div style="font-size:48px">📦</div><p>No hay depósitos registrados.</p></div>'; return; }
+  el.innerHTML = DB.depositos.map(function(d) {
+    var lib = DB.librerias.find(function(l){return l.id===d.libreria_id;});
+    var libro = DB.libros.find(function(l){return l.id===d.libro_id;});
+    var rest = d.cantidad_enviada - d.cantidad_vendida;
+    var pct = d.cantidad_enviada > 0 ? (rest/d.cantidad_enviada)*100 : 0;
+    var albTag = d.albaran ? ' · <b>'+d.albaran+'</b>' : '';
+    return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center">' +
+      '<div><div style="font-size:15px;font-weight:700">'+(libro?libro.titulo:'Libro')+'</div>' +
+      '<div style="font-size:13px;color:var(--muted)">'+(lib?lib.nombre:'')+' · '+fecha(d.fecha_envio)+albTag+'</div></div>' +
+      '<button class="bico" onclick="editDeposito(\''+d.id+'\')" style="flex-shrink:0">✏️</button>' +
+      '<span class="badge '+(rest>0?'bg':'')+'">'+rest+' rest.</span></div>' +
+      '<div class="stb"><div class="stf'+(pct<30?' low':'')+'" style="width:'+pct+'%"></div></div>' +
+      '<div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--muted)">' +
+      '<span>Enviados: '+d.cantidad_enviada+'</span><span>Vendidos: '+d.cantidad_vendida+'</span></div></div>';
+  }).join('');
+}
+
+function renderStockLibrerias() {
+  var el = document.getElementById('st-librerias');
+  if (!DB.librerias.length) { el.innerHTML = '<div class="empty"><div style="font-size:48px">🏪</div><p>No hay librerías.</p></div>'; return; }
+  el.innerHTML = DB.librerias.map(function(lib) {
+    var rows = DB.libros.map(function(l) {
+      var s = stockLib(l.id, lib.id);
+      if (s === 0) return '';
+      return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">' +
+        '<span>'+l.titulo+'</span><span style="font-weight:700;color:'+(s>0?'var(--green)':'var(--accent)')+'">'+s+' ud.</span></div>';
+    }).filter(function(r){return r!=='';}).join('');
+    return '<div class="card"><div style="font-weight:700;margin-bottom:8px">🏪 '+lib.nombre+'</div>' +
+      (rows || '<div style="font-size:13px;color:var(--muted)">Sin stock en depósito</div>') + '</div>';
+  }).join('');
+}
+
+function renderVentas() {
+  var now = new Date();
+  var mes = DB.ventas.filter(function(v) {
+    var f = new Date(v.fecha); return f.getMonth()===now.getMonth()&&f.getFullYear()===now.getFullYear();
+  });
+  var tb = mes.reduce(function(a,v){return a+v.cantidad*v.precio_venta;},0);
+  var tg = mes.reduce(function(a,v){
+    var l=DB.libros.find(function(x){return x.id===v.libro_id;}); if(!l) return a;
+    var n=v.canal==='amazon'?(l.neto_amazon||0):(l.neto_librerias||0);
+    return a+v.cantidad*(n-(l.precio_coste||0));
+  },0);
+  document.getElementById('v-mes').textContent = eur(tb);
+  document.getElementById('v-gan').textContent = eur(tg);
+  var data = ventaFiltro==='todos' ? DB.ventas : DB.ventas.filter(function(v){return v.canal===ventaFiltro;});
+  var el = document.getElementById('ventas-list');
+  if (!data.length) { el.innerHTML = '<div class="empty"><div style="font-size:48px">💰</div><p>No hay ventas registradas.</p></div>'; return; }
+  el.innerHTML = data.map(function(v) {
+    var lib = DB.librerias.find(function(l){return l.id===v.libreria_id;});
+    var libro = DB.libros.find(function(l){return l.id===v.libro_id;});
+    var n = libro ? (v.canal==='amazon'?(libro.neto_amazon||0):(libro.neto_librerias||0)) : 0;
+    var g = libro ? v.cantidad*(n-(libro.precio_coste||0)) : 0;
+    return '<div class="li">' +
+      '<div class="lic" style="background:'+(v.canal==='amazon'?'#fdeee8':'#e0f5ea')+'">'+(v.canal==='amazon'?'📦':'💰')+'</div>' +
+      '<div class="lim"><div class="lit">'+(libro?libro.titulo:'Libro')+'</div>' +
+      '<div class="lis">'+(v.canal==='amazon'?'Amazon KDP':(lib?lib.nombre:''))+' · '+fecha(v.fecha)+'</div>' +
+      '<span class="badge '+(v.canal==='amazon'?'bo':'bb')+'">'+v.cantidad+' ud. × '+eur(v.precio_venta)+'</span></div>' +
+      '<div class="lir"><div style="font-size:11px;color:var(--muted)">Neto: '+eur(n*v.cantidad)+'</div>' +
+      '<div style="font-weight:700;color:var(--green)">+'+eur(g)+'</div>' +
+      '<button class="bico" style="margin-top:4px" onclick="delVenta(\''+v.id+'\')">🗑️</button></div></div>';
+  }).join('');
+}
+
+function renderContactos() {
+  var el = document.getElementById('m-contactos');
+  if (!DB.contactos.length) { el.innerHTML = '<div class="empty"><div style="font-size:48px">🌟</div><p>No hay contactos de marca.</p></div>'; return; }
+  var icons = {influencer:'🌟',asociacion:'🤝',organizacion:'🏛️',centro:'🏫',otro:'👤'};
+  el.innerHTML = DB.contactos.map(function(c) {
+    var nL = DB.envios.filter(function(e){return e.contacto_id===c.id;}).reduce(function(a,e){return a+e.cantidad;},0);
+    return '<div class="li"><div class="lic" style="background:#f0e8ff">'+(icons[c.tipo]||'👤')+'</div>' +
+      '<div class="lim"><div class="lit">'+c.nombre+'</div>' +
+      '<div class="lis">'+c.tipo+(c.ciudad?' · '+c.ciudad:'')+'</div>' +
+      '<span class="badge bp">'+nL+' libros enviados</span></div>' +
+      '<div style="display:flex;flex-direction:column;gap:6px">' +
+      '<button class="bico" onclick="editContacto(\''+c.id+'\')">✏️</button>' +
+      '<button class="bico" onclick="delContacto(\''+c.id+'\')">🗑️</button></div></div>';
+  }).join('');
+}
+
+function renderEnvios() {
+  var el = document.getElementById('m-envios');
+  if (!DB.envios.length) { el.innerHTML = '<div class="empty"><div style="font-size:48px">📬</div><p>No hay envíos registrados.</p></div>'; return; }
+  el.innerHTML = DB.envios.map(function(e) {
+    var c = DB.contactos.find(function(x){return x.id===e.contacto_id;});
+    var l = DB.libros.find(function(x){return x.id===e.libro_id;});
+    return '<div class="li"><div class="lic" style="background:#f0e8ff">📬</div>' +
+      '<div class="lim"><div class="lit">'+(l?l.titulo:'Libro')+'</div>' +
+      '<div class="lis">'+(c?c.nombre:'')+' · '+fecha(e.fecha)+'</div>' +
+      '<span class="badge bp">'+e.cantidad+' ud. · '+eur(e.coste_total)+'</span></div>' +
+      '<button class="bico" onclick="delEnvio(\''+e.id+'\')">🗑️</button></div>';
+  }).join('');
+}
+
+function renderGastos() {
+  var el = document.getElementById('m-gastos');
+  var total = DB.gastos.reduce(function(a,g){return a+g.importe;},0);
+  var header = DB.gastos.length ? '<div class="ib">Total gastos: <b>'+eur(total)+'</b></div>' : '';
+  if (!DB.gastos.length) { el.innerHTML = '<div class="empty"><div style="font-size:48px">💸</div><p>No hay gastos registrados.</p></div>'; return; }
+  var icons = {envio:'📮',material:'📦',publicidad:'📢',logistica:'🚚',evento:'🎪',otro:'💸'};
+  el.innerHTML = header + DB.gastos.map(function(g) {
+    return '<div class="li"><div class="lic" style="background:#fff3e0">'+(icons[g.categoria]||'💸')+'</div>' +
+      '<div class="lim"><div class="lit">'+g.concepto+'</div>' +
+      '<div class="lis">'+g.categoria+(g.proveedor?' · '+g.proveedor:'')+' · '+fecha(g.fecha)+'</div></div>' +
+      '<div class="lir"><div style="font-weight:700;color:var(--accent)">'+eur(g.importe)+'</div>' +
+      '<button class="bico" style="margin-top:4px" onclick="delGasto(\''+g.id+'\')">🗑️</button></div></div>';
+  }).join('');
+}
+
+function renderLiquidaciones() {
+  var el = document.getElementById('liq-list'); if (!el) return;
+  el.innerHTML = DB.liquidaciones.map(function(l) {
+    var lib = DB.librerias.find(function(x){return x.id===l.libreria_id;});
+    return '<div class="cr" style="flex-direction:column;align-items:flex-start;gap:4px">' +
+      '<div style="font-weight:700">'+(lib?lib.nombre:'')+' · '+fecha(l.fecha)+'</div>' +
+      '<div style="font-size:13px;color:var(--muted)">Ventas: '+eur(l.total_ventas)+' · Ganancia: '+eur(l.ganancia)+'</div></div>';
+  }).join('');
+}
+
+// FORMS
+function calcNetos() {
+  var pvp = parseFloat(document.getElementById('l-pvp').value)||0;
+  if (pvp > 0) {
+    var el = document.getElementById('l-calc');
+    el.style.display = 'block';
+    el.innerHTML = 'Sugerido: 🏪 Neto autor (70%): <b>'+eur(pvp*0.70)+'</b> · 📦 Regalía Amazon (40%): <b>'+eur(pvp*0.40)+'</b>';
+  }
+}
+
+function prevImg(input, tipo) {
+  var file = input.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var maxW = 400; var ratio = Math.min(maxW/img.width, maxW/img.height, 1);
+      canvas.width = img.width*ratio; canvas.height = img.height*ratio;
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      var b64 = canvas.toDataURL('image/jpeg',0.75);
+      document.getElementById('l-'+(tipo==='port'?'portada':'contrap')).value = b64;
+      document.getElementById(tipo+'-ph').style.display = 'none';
+      var i = document.getElementById(tipo+'-img'); i.src=b64; i.style.display='block';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearImg(tipo) {
+  document.getElementById('l-'+(tipo==='port'?'portada':'contrap')).value = '';
+  document.getElementById(tipo+'-ph').style.display = 'block';
+  var i = document.getElementById(tipo+'-img'); i.src=''; i.style.display='none';
+}
+
+function resetLibroForm() {
+  ['l-id','l-titulo','l-autor','l-isbn','l-editorial','l-coste','l-pvp','l-nlib','l-namz','l-portada','l-contrap'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('l-calc').style.display='none';
+  document.getElementById('port-ph').style.display='block'; document.getElementById('port-img').style.display='none'; document.getElementById('port-img').src='';
+  document.getElementById('cont-ph').style.display='block'; document.getElementById('cont-img').style.display='none'; document.getElementById('cont-img').src='';
+  document.getElementById('mo-libro-t').textContent='Nuevo libro';
+}
+
+function editLibro(id) {
+  var l = DB.libros.find(function(x){return x.id===id;}); if (!l) return;
+  document.getElementById('l-id').value=l.id;
+  document.getElementById('l-titulo').value=l.titulo||'';
+  document.getElementById('l-autor').value=l.autor||'';
+  document.getElementById('l-isbn').value=l.isbn||'';
+  document.getElementById('l-editorial').value=l.editorial||'';
+  document.getElementById('l-coste').value=l.precio_coste||'';
+  document.getElementById('l-pvp').value=l.precio_venta||'';
+  document.getElementById('l-nlib').value=l.neto_librerias||'';
+  document.getElementById('l-namz').value=l.neto_amazon||'';
+  document.getElementById('l-portada').value=l.portada||'';
+  document.getElementById('l-contrap').value=l.contraportada||'';
+  document.getElementById('l-calc').style.display='none';
+  if (l.portada) { document.getElementById('port-ph').style.display='none'; var pi=document.getElementById('port-img'); pi.src=l.portada; pi.style.display='block'; }
+  else { document.getElementById('port-ph').style.display='block'; document.getElementById('port-img').style.display='none'; }
+  if (l.contraportada) { document.getElementById('cont-ph').style.display='none'; var ci=document.getElementById('cont-img'); ci.src=l.contraportada; ci.style.display='block'; }
+  else { document.getElementById('cont-ph').style.display='block'; document.getElementById('cont-img').style.display='none'; }
+  document.getElementById('mo-libro-t').textContent='Editar libro';
+  openModal('mo-libro');
+}
+
+async function saveLibro() {
+  var titulo = document.getElementById('l-titulo').value.trim();
+  if (!titulo) { toast('El título es obligatorio'); return; }
+  var data = {
+    titulo: titulo,
+    autor: document.getElementById('l-autor').value.trim(),
+    isbn: document.getElementById('l-isbn').value.trim(),
+    editorial: document.getElementById('l-editorial').value.trim(),
+    precio_coste: parseFloat(document.getElementById('l-coste').value)||0,
+    precio_venta: parseFloat(document.getElementById('l-pvp').value)||0,
+    neto_librerias: parseFloat(document.getElementById('l-nlib').value)||0,
+    neto_amazon: parseFloat(document.getElementById('l-namz').value)||0,
+    portada: document.getElementById('l-portada').value||null,
+    contraportada: document.getElementById('l-contrap').value||null
+  };
+  try {
+    var id = document.getElementById('l-id').value;
+    if (id) await upd('libros',id,data); else await ins('libros',data);
+    closeModal('mo-libro'); toast('Libro guardado ✓'); await loadAll();
+  } catch(e) { toast('Error: ' + (e.message||JSON.stringify(e)).substring(0,60)); console.error(e); }
+}
+
+async function delLibro(id) { if(!confirm('¿Eliminar?'))return; try{await del('libros',id);toast('Eliminado');await loadAll();}catch(e){toast('Error');} }
+
+// LIBRERÍAS
+function resetLibreriaForm() {
+  ['lib-id','lib-nombre','lib-ciudad','lib-dir','lib-contacto','lib-email','lib-tel'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('mo-lib-t').textContent='Nueva librería';
+}
+function editLibreria(id) {
+  var l=DB.librerias.find(function(x){return x.id===id;}); if(!l)return;
+  document.getElementById('lib-id').value=l.id;
+  document.getElementById('lib-nombre').value=l.nombre||'';
+  document.getElementById('lib-ciudad').value=l.ciudad||'';
+  document.getElementById('lib-dir').value=l.direccion||'';
+  document.getElementById('lib-contacto').value=l.contacto||'';
+  document.getElementById('lib-email').value=l.email||'';
+  document.getElementById('lib-tel').value=l.telefono||'';
+  document.getElementById('mo-lib-t').textContent='Editar librería';
+  openModal('mo-libreria');
+}
+async function saveLibreria() {
+  var nombre=document.getElementById('lib-nombre').value.trim(); if(!nombre){toast('El nombre es obligatorio');return;}
+  var data={nombre:nombre,ciudad:document.getElementById('lib-ciudad').value.trim(),direccion:document.getElementById('lib-dir').value.trim(),contacto:document.getElementById('lib-contacto').value.trim(),email:document.getElementById('lib-email').value.trim(),telefono:document.getElementById('lib-tel').value.trim()};
+  try{var id=document.getElementById('lib-id').value;if(id)await upd('librerias',id,data);else await ins('librerias',data);closeModal('mo-libreria');toast('Guardada ✓');await loadAll();}catch(e){toast('Error');}
+}
+async function delLibreria(id){if(!confirm('¿Eliminar?'))return;try{await del('librerias',id);toast('Eliminada');await loadAll();}catch(e){toast('Error');}}
+
+// COMPRAS
+function resetCompraForm() {
+  var sel=document.getElementById('c-libro');
+  sel.innerHTML='<option value="">Seleccionar...</option>'+DB.libros.map(function(l){return '<option value="'+l.id+'" data-c="'+(l.precio_coste||0)+'">'+l.titulo+'</option>';}).join('');
+  sel.onchange=function(){var opt=sel.options[sel.selectedIndex];if(opt&&opt.dataset.c)document.getElementById('c-coste').value=opt.dataset.c;};
+  document.getElementById('c-cant').value='';
+  document.getElementById('c-coste').value='';
+  document.getElementById('c-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('c-notas').value='';
+}
+async function saveCompra() {
+  var lid=document.getElementById('c-libro').value;
+  var cant=parseInt(document.getElementById('c-cant').value)||0;
+  var cu=parseFloat(document.getElementById('c-coste').value)||0;
+  if(!lid||!cant){toast('Selecciona libro y cantidad');return;}
+  try{await ins('compras_kdp',{libro_id:lid,cantidad:cant,coste_unitario:cu,coste_total:cant*cu,fecha_pedido:document.getElementById('c-fecha').value,notas:document.getElementById('c-notas').value});closeModal('mo-compra');toast('Compra registrada ✓');await loadAll();}catch(e){toast('Error al guardar');console.error(e);}
+}
+async function delCompra(id){if(!confirm('¿Eliminar?'))return;try{await del('compras_kdp',id);toast('Eliminada');await loadAll();}catch(e){toast('Error');}}
+
+// DEPÓSITOS
+function editDeposito(id) {
+  var d = DB.depositos.find(function(x){return x.id===id;}); if(!d) return;
+  var s1 = document.getElementById('d-lib');
+  s1.innerHTML='<option value="">Seleccionar...</option>'+DB.librerias.map(function(l){return '<option value="'+l.id+'"'+(l.id===d.libreria_id?' selected':'')+'>'+l.nombre+'</option>';}).join('');
+  var s2 = document.getElementById('d-libro');
+  s2.innerHTML='<option value="">Seleccionar...</option>'+DB.libros.map(function(l){return '<option value="'+l.id+'"'+(l.id===d.libro_id?' selected':'')+'>'+l.titulo+'</option>';}).join('');
+  document.getElementById('d-cant').value = d.cantidad_enviada;
+  document.getElementById('d-fecha').value = d.fecha_envio;
+  var alb = d.albaran ? d.albaran.replace('DEP-','') : '';
+  document.getElementById('d-albaran').value = alb ? parseInt(alb) : '';
+  document.getElementById('d-id').value = d.id;
+  document.getElementById('mo-dep-t').textContent = 'Editar depósito';
+  openModal('mo-deposito');
+}
+
+function resetDepositoForm() {
+  var s1=document.getElementById('d-lib');
+  s1.innerHTML='<option value="">Seleccionar...</option>'+DB.librerias.map(function(l){return '<option value="'+l.id+'">'+l.nombre+'</option>';}).join('');
+  var s2=document.getElementById('d-libro');
+  s2.innerHTML='<option value="">Seleccionar...</option>'+DB.libros.map(function(l){return '<option value="'+l.id+'">'+l.titulo+' (almacén: '+Math.max(0,almacen(l.id))+' ud.)</option>';}).join('');
+  document.getElementById('d-cant').value='';
+  document.getElementById('d-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('d-albaran').value='';
+  document.getElementById('d-id').value='';
+  document.getElementById('mo-dep-t').textContent='Nuevo depósito';
+}
+async function saveDeposito() {
+  var lid=document.getElementById('d-lib').value;
+  var libid=document.getElementById('d-libro').value;
+  var cant=parseInt(document.getElementById('d-cant').value)||0;
+  if(!lid||!libid||!cant){toast('Rellena todos los campos');return;}
+  var disp=almacen(libid);
+  if(cant>disp){toast('Solo hay '+disp+' ud. en almacén');return;}
+  var alb = document.getElementById('d-albaran').value;
+  var albaran = alb ? 'DEP-' + String(alb).padStart(3,'0') : null;
+  var did = document.getElementById('d-id').value;
+  try{
+    if(did) {
+      await upd('depositos',did,{libreria_id:lid,libro_id:libid,cantidad_enviada:cant,fecha_envio:document.getElementById('d-fecha').value,albaran:albaran});
+      toast('Depósito actualizado ✓');
+    } else {
+      await ins('depositos',{libreria_id:lid,libro_id:libid,cantidad_enviada:cant,cantidad_vendida:0,fecha_envio:document.getElementById('d-fecha').value,albaran:albaran});
+      toast('Depósito registrado ✓');
+    }
+    closeModal('mo-deposito');await loadAll();
+  }catch(e){toast('Error al guardar');console.error(e);}
+}
+
+// VENTAS
+function resetVentaForm() {
+  var sel=document.getElementById('v-libreria');
+  sel.innerHTML='<option value="">Seleccionar...</option>'+DB.librerias.map(function(l){return '<option value="'+l.id+'">'+l.nombre+'</option>';}).join('');
+  document.getElementById('v-libro').innerHTML='<option value="">Seleccionar...</option>';
+  document.getElementById('v-cant').value='1';
+  document.getElementById('v-pvp').value='';
+  document.getElementById('v-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('v-canal').value='libreria';
+  document.getElementById('v-lib-grp').style.display='block';
+  document.getElementById('v-info').style.display='none';
+}
+function onCanalChange() {
+  var canal=document.getElementById('v-canal').value;
+  var grp=document.getElementById('v-lib-grp');
+  if (canal==='amazon') {
+    grp.style.display='none';
+    var sel=document.getElementById('v-libro');
+    sel.innerHTML='<option value="">Seleccionar...</option>'+DB.libros.map(function(l){return '<option value="'+l.id+'" data-p="'+(l.precio_venta||0)+'" data-n="'+(l.neto_amazon||0)+'" data-c="'+(l.precio_coste||0)+'">'+l.titulo+'</option>';}).join('');
+    sel.onchange=function(){updateVentaInfo();};
+  } else {
+    grp.style.display='block';
+    document.getElementById('v-libro').innerHTML='<option value="">Seleccionar...</option>';
+  }
+}
+function loadLibrosVenta() {
+  var libId=document.getElementById('v-libreria').value;
+  var sel=document.getElementById('v-libro');
+  sel.innerHTML='<option value="">Seleccionar...</option>';
+  DB.libros.forEach(function(l){
+    var s=stockLib(l.id,libId);
+    if(s>0){
+      var opt=document.createElement('option');
+      opt.value=l.id; opt.textContent=l.titulo+' ('+s+' ud.)';
+      opt.dataset.p=l.precio_venta||0; opt.dataset.n=l.neto_librerias||0; opt.dataset.c=l.precio_coste||0;
+      sel.appendChild(opt);
+    }
+  });
+  sel.onchange=function(){updateVentaInfo();};
+}
+function updateVentaInfo() {
+  var sel=document.getElementById('v-libro');
+  var opt=sel.options[sel.selectedIndex];
+  if(opt&&opt.dataset.p){
+    document.getElementById('v-pvp').value=opt.dataset.p;
+    var n=parseFloat(opt.dataset.n||0); var c=parseFloat(opt.dataset.c||0);
+    var info=document.getElementById('v-info');
+    info.style.display='block';
+    info.innerHTML='Neto que recibes: <b>'+eur(n)+'</b> · Ganancia/ud: <b style="color:var(--green)">'+eur(n-c)+'</b>';
+  }
+}
+async function saveVenta() {
+  var canal=document.getElementById('v-canal').value;
+  var cant=parseInt(document.getElementById('v-cant').value)||0;
+  var pvp=parseFloat(document.getElementById('v-pvp').value)||0;
+  if(!cant||!pvp){toast('Rellena todos los campos');return;}
+  var sel=document.getElementById('v-libro');
+  var opt=sel.options[sel.selectedIndex];
+  if(!opt||!opt.value){toast('Selecciona un libro');return;}
+  var libId=opt.value;
+  var n=parseFloat(opt.dataset.n||0); var c=parseFloat(opt.dataset.c||0);
+  var libreriaId=canal==='libreria'?document.getElementById('v-libreria').value:null;
+  if(canal==='libreria'&&!libreriaId){toast('Selecciona una librería');return;}
+  var depId=null;
+  if(canal==='libreria'){
+    var dep=DB.depositos.find(function(d){return d.libro_id===libId&&d.libreria_id===libreriaId&&(d.cantidad_enviada-d.cantidad_vendida)>0;});
+    if(dep){depId=dep.id;await upd('depositos',dep.id,{cantidad_vendida:dep.cantidad_vendida+cant});}
+  }
+  try{
+    await ins('ventas',{libreria_id:libreriaId,libro_id:libId,deposito_id:depId,cantidad:cant,precio_venta:pvp,canal:canal,importe_neto:n*cant,ganancia_real:(n-c)*cant,fecha:document.getElementById('v-fecha').value});
+    closeModal('mo-venta');toast('Venta registrada ✓');await loadAll();
+  }catch(e){toast('Error al guardar');console.error(e);}
+}
+async function delVenta(id){if(!confirm('¿Eliminar?'))return;try{await del('ventas',id);toast('Eliminada');await loadAll();}catch(e){toast('Error');}}
+
+// CONTACTOS
+function resetContactoForm(){['co-id','co-nombre','co-ciudad','co-persona','co-email','co-tel','co-notas'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});document.getElementById('co-tipo').value='influencer';document.getElementById('mo-cont-t').textContent='Nuevo contacto';}
+function editContacto(id){var c=DB.contactos.find(function(x){return x.id===id;});if(!c)return;document.getElementById('co-id').value=c.id;document.getElementById('co-nombre').value=c.nombre||'';document.getElementById('co-tipo').value=c.tipo||'influencer';document.getElementById('co-ciudad').value=c.ciudad||'';document.getElementById('co-persona').value=c.contacto||'';document.getElementById('co-email').value=c.email||'';document.getElementById('co-tel').value=c.telefono||'';document.getElementById('co-notas').value=c.notas||'';document.getElementById('mo-cont-t').textContent='Editar contacto';openModal('mo-contacto');}
+async function saveContacto(){var nom=document.getElementById('co-nombre').value.trim();if(!nom){toast('El nombre es obligatorio');return;}var data={nombre:nom,tipo:document.getElementById('co-tipo').value,ciudad:document.getElementById('co-ciudad').value.trim(),contacto:document.getElementById('co-persona').value.trim(),email:document.getElementById('co-email').value.trim(),telefono:document.getElementById('co-tel').value.trim(),notas:document.getElementById('co-notas').value.trim()};try{var id=document.getElementById('co-id').value;if(id)await upd('contactos_marca',id,data);else await ins('contactos_marca',data);closeModal('mo-contacto');toast('Guardado ✓');await loadAll();}catch(e){toast('Error');}}
+async function delContacto(id){if(!confirm('¿Eliminar?'))return;try{await del('contactos_marca',id);toast('Eliminado');await loadAll();}catch(e){toast('Error');}}
+
+// ENVÍOS
+function resetEnvioForm(){
+  var s1=document.getElementById('e-contacto');s1.innerHTML='<option value="">Seleccionar...</option>'+DB.contactos.map(function(c){return '<option value="'+c.id+'">'+c.nombre+'</option>';}).join('');
+  var s2=document.getElementById('e-libro');s2.innerHTML='<option value="">Seleccionar...</option>'+DB.libros.map(function(l){return '<option value="'+l.id+'" data-c="'+(l.precio_coste||0)+'">'+l.titulo+' (alm: '+Math.max(0,almacen(l.id))+' ud.)</option>';}).join('');
+  s2.onchange=function(){var opt=s2.options[s2.selectedIndex];if(opt&&opt.dataset.c)document.getElementById('e-coste').value=opt.dataset.c;};
+  document.getElementById('e-cant').value='1';document.getElementById('e-coste').value='';document.getElementById('e-fecha').value=new Date().toISOString().split('T')[0];document.getElementById('e-notas').value='';
+}
+async function saveEnvio(){var cid=document.getElementById('e-contacto').value;var lid=document.getElementById('e-libro').value;var cant=parseInt(document.getElementById('e-cant').value)||0;var cu=parseFloat(document.getElementById('e-coste').value)||0;if(!cid||!lid||!cant){toast('Rellena todos los campos');return;}try{await ins('envios_marca',{contacto_id:cid,libro_id:lid,cantidad:cant,coste_unitario:cu,coste_total:cant*cu,fecha:document.getElementById('e-fecha').value,notas:document.getElementById('e-notas').value});closeModal('mo-envio');toast('Envío registrado ✓');await loadAll();}catch(e){toast('Error');}}
+async function delEnvio(id){if(!confirm('¿Eliminar?'))return;try{await del('envios_marca',id);toast('Eliminado');await loadAll();}catch(e){toast('Error');}}
+
+// GASTOS
+function resetGastoForm(){['g-concepto','g-prov','g-notas'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('g-importe').value='';document.getElementById('g-cat').value='envio';document.getElementById('g-fecha').value=new Date().toISOString().split('T')[0];}
+async function saveGasto(){var con=document.getElementById('g-concepto').value.trim();var imp=parseFloat(document.getElementById('g-importe').value)||0;if(!con||!imp){toast('Rellena concepto e importe');return;}try{await ins('gastos_expansion',{concepto:con,categoria:document.getElementById('g-cat').value,importe:imp,proveedor:document.getElementById('g-prov').value.trim(),fecha:document.getElementById('g-fecha').value,notas:document.getElementById('g-notas').value.trim()});closeModal('mo-gasto');toast('Guardado ✓');await loadAll();}catch(e){toast('Error');}}
+async function delGasto(id){if(!confirm('¿Eliminar?'))return;try{await del('gastos_expansion',id);toast('Eliminado');await loadAll();}catch(e){toast('Error');}}
+
+// LIQUIDACIONES
+async function saveLiquidacion(){
+  var lid=document.getElementById('lq-lib').value;if(!lid){toast('Selecciona una librería');return;}
+  var tv=parseFloat(document.getElementById('lq-ventas').value)||0;var tc=parseFloat(document.getElementById('lq-coste').value)||0;
+  try{await ins('liquidaciones',{libreria_id:lid,total_ventas:tv,total_coste:tc,ganancia:tv-tc,fecha:document.getElementById('lq-fecha').value,notas:document.getElementById('lq-notas').value});closeModal('mo-liquidacion');toast('Guardada ✓');await loadAll();}catch(e){toast('Error');}
+}
+
+// PDF
+function pdfCatalogoCliente() {
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF();
+  var f = new Date().toLocaleDateString('es-ES');
+  doc.setFillColor(26,26,46); doc.rect(0,0,210,55,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(26); doc.setFont(undefined,'bold'); doc.text('CATÁLOGO',105,28,{align:'center'});
+  doc.setFontSize(12); doc.setFont(undefined,'normal'); doc.text(DB.libros.length+' títulos  ·  '+f,105,43,{align:'center'});
+  doc.setDrawColor(200,80,42); doc.setLineWidth(1); doc.line(20,60,190,60);
+  var y=73;
+  DB.libros.forEach(function(l,i){
+    var rh=44;
+    if(y+rh>270){doc.addPage();y=24;}
+    if(i%2===0){doc.setFillColor(247,245,240);doc.rect(14,y-5,182,rh,'F');}
+    if(l.portada){try{doc.addImage(l.portada,'JPEG',16,y-2,26,36);}catch(e){}}
+    else{doc.setFillColor(238,234,224);doc.rect(16,y-2,26,36,'F');}
+    doc.setFontSize(13);doc.setFont(undefined,'bold');doc.setTextColor(26,26,46);doc.text(l.titulo.length>40?l.titulo.substring(0,40)+'…':l.titulo,54,y+4);
+    doc.setFontSize(9);doc.setFont(undefined,'normal');doc.setTextColor(100,100,95);
+    if(l.autor)doc.text(l.autor,54,y+13);
+    if(l.isbn){doc.setFontSize(8);doc.setTextColor(150,150,140);doc.text('ISBN: '+l.isbn,54,y+21);}
+    doc.setFontSize(14);doc.setFont(undefined,'bold');doc.setTextColor(26,26,46);doc.text(eur(l.precio_venta),193,y+10,{align:'right'});
+    doc.setFontSize(8);doc.setFont(undefined,'normal');doc.setTextColor(150,150,140);doc.text('IVA incluido',193,y+19,{align:'right'});
+    y+=rh+2;
+  });
+  var tp=doc.getNumberOfPages();for(var p=1;p<=tp;p++){doc.setPage(p);doc.setFontSize(8);doc.setTextColor(150,150,140);doc.text('Pág '+p+' de '+tp,105,292,{align:'center'});}
+  doc.save('catalogo-cliente-'+f.replace(/\//g,'-')+'.pdf'); toast('Catálogo cliente generado ✓');
+}
+
+function pdfCatalogoLibrerias() {
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF();
+  var f = new Date().toLocaleDateString('es-ES');
+  doc.setFillColor(26,26,46);doc.rect(0,0,210,60,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(18);doc.setFont(undefined,'bold');doc.text('CATÁLOGO PARA LIBRERÍAS',105,22,{align:'center'});
+  doc.setFontSize(10);doc.setFont(undefined,'normal');doc.text('CONFIDENCIAL — Uso exclusivo para librerías',105,34,{align:'center'});
+  doc.text(DB.libros.length+' títulos  ·  '+f,105,46,{align:'center'});
+  doc.setDrawColor(200,80,42);doc.setLineWidth(1);doc.line(20,65,190,65);
+  var y=78;
+  DB.libros.forEach(function(l,i){
+    var rh=54;
+    if(y+rh>270){doc.addPage();y=24;}
+    if(i%2===0){doc.setFillColor(247,245,240);doc.rect(14,y-5,182,rh,'F');}
+    if(l.portada){try{doc.addImage(l.portada,'JPEG',16,y-2,28,40);}catch(e){}}
+    else{doc.setFillColor(238,234,224);doc.rect(16,y-2,28,40,'F');}
+    doc.setFontSize(12);doc.setFont(undefined,'bold');doc.setTextColor(26,26,46);doc.text(l.titulo.length>36?l.titulo.substring(0,36)+'…':l.titulo,56,y+4);
+    doc.setFontSize(9);doc.setFont(undefined,'normal');doc.setTextColor(100,100,95);
+    if(l.autor)doc.text(l.autor,56,y+12);
+    if(l.editorial)doc.text(l.editorial,56,y+20);
+    if(l.isbn){doc.setFontSize(8);doc.setTextColor(150,150,140);doc.text('ISBN: '+l.isbn,56,y+28);}
+    var pvp=l.precio_venta||0; var nLib=l.neto_librerias||0; var com=pvp-nLib;
+    doc.setFontSize(11);doc.setFont(undefined,'bold');doc.setTextColor(26,26,46);doc.text('PVP: '+eur(pvp),193,y+4,{align:'right'});
+    doc.setFontSize(9);doc.setFont(undefined,'bold');doc.setTextColor(42,122,74);doc.text('Autor recibe (70%): '+eur(nLib),193,y+14,{align:'right'});
+    doc.setFontSize(9);doc.setFont(undefined,'bold');doc.setTextColor(200,80,42);doc.text('Librería gana (30%): '+eur(com),193,y+23,{align:'right'});
+    doc.setFontSize(7);doc.setFont(undefined,'normal');doc.setTextColor(150,150,140);doc.text('Todos los precios con IVA incluido',193,y+32,{align:'right'});
+    y+=rh+2;
+  });
+  var tp=doc.getNumberOfPages();for(var p=1;p<=tp;p++){doc.setPage(p);doc.setFontSize(8);doc.setTextColor(150,150,140);doc.text('Pág '+p+' de '+tp+' — CONFIDENCIAL',105,292,{align:'center'});}
+  doc.save('catalogo-librerias-'+f.replace(/\//g,'-')+'.pdf'); toast('Catálogo librerías generado ✓');
+}
+
+function pdfStock(){
+  var jsPDF=window.jspdf.jsPDF; var doc=new jsPDF(); var f=new Date().toLocaleDateString('es-ES');
+  doc.setFontSize(20);doc.text('Informe de Stock',20,25);doc.setFontSize(11);doc.text(f,20,35);doc.line(20,40,190,40);
+  var y=50;
+  DB.libros.forEach(function(l){
+    if(y>250){doc.addPage();y=20;}
+    var comp=DB.compras.filter(function(c){return c.libro_id===l.id;}).reduce(function(a,c){return a+c.cantidad;},0);
+    var alm=Math.max(0,almacen(l.id));
+    var enL=DB.librerias.reduce(function(a,lib){return a+Math.max(0,stockLib(l.id,lib.id));},0);
+    var vend=DB.ventas.filter(function(v){return v.libro_id===l.id&&v.canal==='libreria';}).reduce(function(a,v){return a+v.cantidad;},0);
+    doc.setFontSize(12);doc.setFont(undefined,'bold');doc.text(l.titulo,20,y);y+=7;
+    doc.setFontSize(10);doc.setFont(undefined,'normal');
+    doc.text('Comprado: '+comp+' | Almacén: '+alm+' | Librerías: '+enL+' | Vendido: '+vend,22,y);y+=6;
+    doc.text('Valor almacén: '+eur(alm*(l.precio_coste||0)),22,y);y+=10;
+  });
+  doc.save('informe-stock.pdf');toast('PDF generado ✓');
+}
+
+function pdfVentas(){
+  var jsPDF=window.jspdf.jsPDF; var doc=new jsPDF(); var f=new Date().toLocaleDateString('es-ES');
+  doc.setFontSize(20);doc.text('Informe de Ventas',20,25);doc.setFontSize(11);doc.text(f,20,35);doc.line(20,40,190,40);
+  var y=50;var tb=0;var tg=0;
+  DB.ventas.forEach(function(v){
+    if(y>265){doc.addPage();y=20;}
+    var lib=DB.librerias.find(function(l){return l.id===v.libreria_id;});
+    var libro=DB.libros.find(function(l){return l.id===v.libro_id;});
+    var n=libro?(v.canal==='amazon'?(libro.neto_amazon||0):(libro.neto_librerias||0)):0;
+    var g=libro?v.cantidad*(n-(libro.precio_coste||0)):0;
+    tb+=v.cantidad*v.precio_venta;tg+=g;
+    doc.setFontSize(9);doc.text(fecha(v.fecha)+' | '+(libro?libro.titulo:'')+' | '+(v.canal==='amazon'?'Amazon':(lib?lib.nombre:''))+' | '+v.cantidad+' ud. | Neto: '+eur(n*v.cantidad)+' | Gan: '+eur(g),20,y);y+=7;
+  });
+  doc.line(20,y,190,y);y+=7;doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('Total bruto: '+eur(tb)+' | Ganancia: '+eur(tg),20,y);
+  doc.save('informe-ventas.pdf');toast('PDF generado ✓');
+}
+
+function pdfGanancias(){
+  var jsPDF=window.jspdf.jsPDF; var doc=new jsPDF(); var f=new Date().toLocaleDateString('es-ES');
+  doc.setFontSize(20);doc.text('Informe de Ganancias',20,25);doc.setFontSize(11);doc.text(f,20,35);doc.line(20,40,190,40);
+  var y=50;
+  ['libreria','amazon'].forEach(function(canal){
+    var ventas=DB.ventas.filter(function(v){return v.canal===canal;});
+    var g=ventas.reduce(function(a,v){var l=DB.libros.find(function(x){return x.id===v.libro_id;});if(!l)return a;var n=canal==='amazon'?(l.neto_amazon||0):(l.neto_librerias||0);return a+v.cantidad*(n-(l.precio_coste||0));},0);
+    doc.setFontSize(11);doc.text((canal==='amazon'?'Amazon KDP':'Librerías')+': '+ventas.length+' ventas · Ganancia: '+eur(g),20,y);y+=8;
+  });
+  var tg=DB.ventas.reduce(function(a,v){var l=DB.libros.find(function(x){return x.id===v.libro_id;});if(!l)return a;var n=v.canal==='amazon'?(l.neto_amazon||0):(l.neto_librerias||0);return a+v.cantidad*(n-(l.precio_coste||0));},0);
+  var tgas=DB.gastos.reduce(function(a,g){return a+g.importe;},0)+DB.envios.reduce(function(a,e){return a+e.coste_total;},0);
+  var tkdp=DB.compras.reduce(function(a,c){return a+c.coste_total;},0);
+  y+=4;doc.setFontSize(12);doc.setFont(undefined,'bold');
+  doc.text('Inversión KDP: '+eur(tkdp),20,y);y+=8;
+  doc.text('Gastos marca+expansión: '+eur(tgas),20,y);y+=8;
+  doc.text('Ganancia bruta: '+eur(tg),20,y);y+=8;
+  doc.setTextColor(42,122,74);doc.text('Resultado final: '+eur(tg-tgas),20,y);
+  doc.save('informe-ganancias.pdf');toast('PDF generado ✓');
+}
+
+function pdfMarca(){
+  var jsPDF=window.jspdf.jsPDF; var doc=new jsPDF(); var f=new Date().toLocaleDateString('es-ES');
+  doc.setFontSize(20);doc.text('Informe de Marca',20,25);doc.setFontSize(11);doc.text(f,20,35);doc.line(20,40,190,40);
+  var y=50;doc.setFontSize(13);doc.setFont(undefined,'bold');doc.text('Contactos de marca',20,y);y+=10;
+  DB.contactos.forEach(function(c){
+    if(y>260){doc.addPage();y=20;}
+    var nL=DB.envios.filter(function(e){return e.contacto_id===c.id;}).reduce(function(a,e){return a+e.cantidad;},0);
+    var co=DB.envios.filter(function(e){return e.contacto_id===c.id;}).reduce(function(a,e){return a+e.coste_total;},0);
+    doc.setFontSize(10);doc.setFont(undefined,'normal');doc.text(c.nombre+' ('+c.tipo+') · '+nL+' libros · Coste: '+eur(co),22,y);y+=8;
+  });
+  y+=4;var tg=0;doc.setFontSize(13);doc.setFont(undefined,'bold');doc.text('Gastos de expansión',20,y);y+=10;
+  DB.gastos.forEach(function(g){
+    if(y>265){doc.addPage();y=20;}
+    doc.setFontSize(9);doc.setFont(undefined,'normal');doc.text(fecha(g.fecha)+' | '+g.concepto+' | '+g.categoria+' | '+eur(g.importe),22,y);y+=6;tg+=g.importe;
+  });
+  doc.line(20,y,190,y);y+=7;doc.setFontSize(11);doc.setFont(undefined,'bold');doc.text('Total gastos: '+eur(tg),20,y);
+  doc.save('informe-marca.pdf');toast('PDF generado ✓');
+}
+
+// BACKUP
+function exportBackup(){var blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='backup-numizz-'+new Date().toISOString().split('T')[0]+'.json';a.click();URL.revokeObjectURL(url);toast('Backup exportado ✓');}
+async function importBackup(input){var file=input.files[0];if(!file)return;try{DB=JSON.parse(await file.text());renderAll();toast('Backup cargado');}catch(e){toast('Error al leer el backup');}}
+
+// CONFIG
+function saveConfig(){var url=document.getElementById('cfg-url').value.trim();var key=document.getElementById('cfg-key').value.trim();if(!url||!key){toast('Rellena los dos campos');return;}SB_URL=url;SB_KEY=key;localStorage.setItem('sb_url',url);localStorage.setItem('sb_key',key);closeModal('mo-config');toast('Guardado. Recargando...');setTimeout(function(){loadAll();},500);}
+
+// Init
+document.querySelectorAll('.mo').forEach(function(o){o.addEventListener('click',function(e){if(e.target===o)o.classList.remove('open');});});
+document.getElementById('cfg-url').value=SB_URL;
+document.getElementById('cfg-key').value=SB_KEY;
+
+// Show liquidacion form setup on open
+document.getElementById('mo-liquidacion').addEventListener('click',function(){});
+function setupLiqModal(){var sel=document.getElementById('lq-lib');sel.innerHTML='<option value="">Seleccionar...</option>'+DB.librerias.map(function(l){return '<option value="'+l.id+'">'+l.nombre+'</option>';}).join('');['lq-ventas','lq-coste','lq-notas'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('lq-fecha').value=new Date().toISOString().split('T')[0];}
+var origOpen=openModal;
+openModal=function(id){if(id==='mo-liquidacion')setupLiqModal();origOpen(id);};
+
+loadAll();
+</script>
+</body>
+</html>
